@@ -1,17 +1,12 @@
 import axios from "axios";
 
 class backblaze {
-  credentials: string;
-  authorizationToken: string;
+  authorizationToken: string='';
   apiURL: string;
   keyID: string = import.meta.env.VITE_BLACKBLAZE_KEY_ID;
   applicationKey: string = import.meta.env.VITE_BLACKBLAZE_APPLICATION_KEY;
 
   constructor() {
-    this.credentials = btoa(
-      `${this.keyID}:${this.applicationKey}`
-    );
-    this.authorizationToken = "";
     this.apiURL = "https://api005.backblazeb2.com";
   }
 
@@ -20,8 +15,8 @@ class backblaze {
     axios
       .get(`${this.apiURL}/b2api/v2/b2_authorize_account`, {
         headers: {
-          Authorization: `Basic ${this.credentials}`,
-          "content-type": "application/json",
+          Authorization: `Basic ${btoa(`${this.keyID}:${this.applicationKey}`)}`,
+          "Content-Type": "application/json",
         },
       })
       .then((res) => {

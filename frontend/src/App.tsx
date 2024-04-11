@@ -3,6 +3,7 @@ import "./App.css";
 import Home from "./pages/home";
 import { useEffect } from "react";
 import { socket } from "./controllers/socket";
+import Login from "./pages/login";
 
 function App() {
   useEffect(() => {
@@ -15,6 +16,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login/>} />
       </Routes>
     </BrowserRouter>
   );
