@@ -22,7 +22,7 @@ export default function useGetData(url: string, options: ioptions = {}) {
         setError(err);
         console.log(`Error getting ${url}: `, err);
       });
-  }, [url, options]);
+  },[]);
 
     return { data, error, loading };
 }
