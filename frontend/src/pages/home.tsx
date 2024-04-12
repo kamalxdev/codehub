@@ -22,10 +22,12 @@ function Home() {
   b2.authorizeAccount();
   if(verifyUSER.loading) return <h1>Loading...</h1>
   return (
+    <>
     <div>
-      <h1>${JSON.stringify(verifyUSER.data)}</h1>
+      <h1>{JSON.stringify(verifyUSER.data)}</h1>
     </div>
-  );
+    </>
+      );
 }
 
 
