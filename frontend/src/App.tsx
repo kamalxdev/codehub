@@ -3,7 +3,7 @@ import "./App.css";
 import Home from "./pages/home";
 import { useEffect } from "react";
 import { socket } from "./controllers/socket";
-import Login from "./pages/login";
+import Signin from "./pages/signin";
 import Navbar from "./components/navbar";
 import CreateBucket from "./pages/create_bucket";
 import Signup from "./pages/signup";
@@ -20,7 +20,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/auth/signin" element={<Login />} />
+        <Route path="/auth/signin" element={<Signin />} />
         <Route path="/create/bucket" element={<CreateBucket/>} />
         <Route path="/auth/signup" element={<Signup/>} />
       </Routes>

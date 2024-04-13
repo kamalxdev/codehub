@@ -2,7 +2,7 @@ import { memo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Signin = () => {
   // To handle the form state
   const [data, setData] = useState({
     email: "",
@@ -30,8 +30,8 @@ const Login = () => {
         }
       })
       .catch((err) => {
-        console.log("Error on login form submission", err);
-        alert("Error on login form submission");
+        console.log("Error on Signin form submission", err);
+        alert("Error on Signin form submission");
       });
   }
 
@@ -39,7 +39,7 @@ const Login = () => {
     <div className="relative mx-auto w-full max-w-md bg-white px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:rounded-xl sm:px-10">
       <div className="w-full">
         <div className="text-center">
-          <h1 className="text-3xl font-semibold text-gray-900">Log in</h1>
+          <h1 className="text-3xl font-semibold text-gray-900">Sign in</h1>
           <p className="mt-2 text-gray-500">
             Sign in below to access your account
           </p>
@@ -89,13 +89,13 @@ const Login = () => {
                 onClick={handleSubmit}
                 className="w-full rounded-md bg-black px-3 py-4 text-white focus:bg-gray-600 focus:outline-none"
               >
-                Log in
+                Sign in
               </button>
             </div>
             <p className="text-center text-sm text-gray-500">
               Don&#x27;t have an account yet?
               <a
-                href="#!"
+                href="/auth/signup"
                 className="font-semibold text-gray-600 hover:underline focus:text-gray-800 focus:outline-none"
               >
                 Sign up
@@ -109,4 +109,4 @@ const Login = () => {
   );
 };
 
-export default memo(Login);
+export default memo(Signin);

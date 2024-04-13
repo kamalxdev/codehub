@@ -5,10 +5,6 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET as string;
-const users = {
-  email: "codehub",
-  password: "1234567",
-};
 
 const prisma = new PrismaClient();
 
