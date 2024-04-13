@@ -14,6 +14,7 @@ function CreateBucket() {
             <select className="border border-black" onChange={(e)=>setbucket({...bucket, server:e.target.value})}>
                 <option value="Node">Node</option>
                 <option value="Python">Python</option>
+                <option value="React">React</option>
             </select>
             <button type="button" className="border border-black">Create</button>
         </div>
