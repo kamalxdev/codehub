@@ -20,6 +20,8 @@ const backblazeContentBucketID = process.env.BLACKBLAZE_CONTENT_BUCKETID as stri
 
 
 
+// to authorize backblaze whic returns the accountAuthorizationToken
+
 
 async function handlegetBackblazeAuthorization(req: Request, res: Response) {
   await axios
@@ -43,15 +45,25 @@ async function handlegetBackblazeAuthorization(req: Request, res: Response) {
 }
 
 
+
+
+
+// to upload file to backblaze which returns the file uploaded data
+
+
 async function handlegetBackblazeUploadFile(req: Request, res: Response){
   const body = req.body;
 
 
   if (!body.fileName || !body.fileData || !body.accountAuthorizationToken) {
-    return res.json({ message: "Missing file name or file data", status: 400 });
+    return res.json({ message: "Please enter all fields", status: 400 });
   }
+
+  // creating sha1 hash of the file data
   let hash = crypto.createHash("sha1");
 
+
+  // to get the upload url from backblaze
   await axios.get(`${apiURL}/b2api/v2/b2_get_upload_url?bucketId=${backblazeContentBucketID}`, {
     headers: {
       Authorization: body?.accountAuthorizationToken,
@@ -60,9 +72,10 @@ async function handlegetBackblazeUploadFile(req: Request, res: Response){
   }).then(async (response) => {
 
 
-
     let uploadURLData = response?.data;
     let contentsha1 = hash.update(body?.fileData).digest("hex");
+
+    // to upload the file to backblaze
     await axios.post(uploadURLData?.uploadUrl,body?.fileData, {
       headers:{
         Authorization: uploadURLData?.authorizationToken,
@@ -85,10 +98,14 @@ async function handlegetBackblazeUploadFile(req: Request, res: Response){
   });
 
 
-
-
-
 }
+
+
+
+
+
+
+
 
 
 

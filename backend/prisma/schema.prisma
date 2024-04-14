@@ -20,4 +20,22 @@ model User {
   name      String?
   password  String
   createdAt DateTime @default(now())
+  bucket Bucket[]
 }
+
+model ServerContent{
+  id        Int   @id @default(autoincrement())
+  name      String
+  fileName String
+  fileid    String
+}
+
+
+model Bucket{
+  id        Int   @id @default(autoincrement())
+  name      String
+  createdBy Int 
+  server  String
+  createdAt DateTime @default(now())
+  user User @relation(fields: [createdBy], references: [id])
+  }
