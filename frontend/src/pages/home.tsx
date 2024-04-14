@@ -1,6 +1,5 @@
 
 import useGetData from "../hooks/getData";
-import backblaze from "../controllers/backblaze";
 
 
 function Home() {
@@ -10,21 +9,20 @@ function Home() {
     }
   
   });
+
+  const b2_authorize=useGetData(`${import.meta.env.VITE_SERVER_URL}api/backblaze/authorize`);
   console.log("USER: ",verifyUSER);
   
 
 
-  // making backblaze object
-  const b2=new backblaze();
 
 
-  // To authorize the backblaze account
-  b2.authorizeAccount();
-  if(verifyUSER.loading) return <h1>Loading...</h1>
+  if(verifyUSER.loading || b2_authorize.loading) return <h1>Loading...</h1>
   return (
     <>
     <div>
       <h1>{JSON.stringify(verifyUSER.data)}</h1>
+      <h1>{JSON.stringify(b2_authorize.data)}</h1>
     </div>
     </>
       );

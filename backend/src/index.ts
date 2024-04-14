@@ -19,6 +19,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth/", require("./routes/auth"));
+app.use("/api/backblaze/", require("./routes/backblaze"));
 
 // Configuring Socket Server
 const httpServer = createServer(app);
