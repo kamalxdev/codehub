@@ -10,6 +10,7 @@ import Signup from "./pages/signup";
 import useGetData from "./hooks/getData";
 import { useSetRecoilState } from "recoil";
 import { authorizeToken } from "./states/authorizeToken";
+import { user } from "./states/user";
 
 function App() {
   useEffect(() => {
@@ -18,13 +19,33 @@ function App() {
       socket.disconnect();
     };
   });
+
+  let server_URL=import.meta.env.VITE_SERVER_URL
+
   const setAuthorizeToken=useSetRecoilState(authorizeToken)
+  const userData=useSetRecoilState(user)
+
+
+  const verifyUSER = useGetData(
+    `${server_URL}api/auth/verify`,
+    {
+      headers: {
+        authtoken: document.cookie
+          .split(";")
+          .find((cookie) => cookie.includes("x-auth-token"))
+          ?.split("=")[1],
+      },
+    }
+  );
   const b2_authorize = useGetData(
-    `${import.meta.env.VITE_SERVER_URL}api/backblaze/authorize`
+    `${server_URL}api/backblaze/authorize`
   );
 
   if (b2_authorize.data) {
     setAuthorizeToken(b2_authorize?.data?.data?.authorizationToken);
+  }
+  if (verifyUSER.data) {
+    userData(verifyUSER?.data?.decoded);
   }
 
   return (
