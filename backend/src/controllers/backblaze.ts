@@ -17,6 +17,7 @@ const backblazeContentBucketID = process.env
 const backblazeDestinationBucketID = process.env
   .BLACKBLAZE_DESTINATION_BUCKETID as string;
 
+
 // to authorize backblaze whic returns the accountAuthorizationToken
 
 async function handlegetBackblazeAuthorization(req: Request, res: Response) {
@@ -99,30 +100,22 @@ async function handlegetBackblazeUploadFile(req: Request, res: Response) {
 // to create a folder in blacblaze which here we say bucket and copy base files of the server
 async function handlegetBackblazeCreateServer(req: Request, res: Response) {
   const body = req.body;
-
+  const user = res.locals.user;
+  const accountAuthorizationToken= req.headers.accountauthorizationtoken as string
+  console.log("accountAuthorizationToken",accountAuthorizationToken);
+  console.log("user",user);
+  
+  
   if (
     !body.server ||
     !body.bucketName ||
-    !body.accountAuthorizationToken ||
-    !body.user
+    !accountAuthorizationToken ||
+    !user
   ) {
     return res.json({ message: "Please enter all fields", status: 400 });
   }
 
-  // check if user exists
-
-  let USER = await prisma.user.findUnique({
-    where: {
-      email: body?.user?.email,
-    },
-  });
-
-  if (!USER)
-    return res.json({
-      message: "User not found. Please login to create a bucket",
-      status: 400,
-    });
-
+  
   // check if bucket already exists
 
   let BUCKET = await prisma.bucket.findUnique({
@@ -140,7 +133,7 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
       `${apiURL}/b2api/v3/b2_list_file_names?bucketId=${backblazeContentBucketID}&prefix=${body.server}`,
       {
         headers: {
-          Authorization: body?.accountAuthorizationToken,
+          Authorization: accountAuthorizationToken,
         },
       }
     )
@@ -162,7 +155,7 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
             },
             {
               headers: {
-                Authorization: body?.accountAuthorizationToken,
+                Authorization: accountAuthorizationToken,
               },
             }
           );
@@ -175,7 +168,7 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
         data: {
           name: body.bucketName,
           server: body.server,
-          createdBy: USER?.id,
+          createdBy: user?.id,
         },
       });
 
@@ -191,15 +184,15 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
 }
 
 async function handleGetAllBuckets(req: Request, res: Response) {
-  const body = req.body;
+  const user = res.locals.user;
+  if(!user) return res.json({message:"User not found",status:400})
+    return res.json({message:"User found",user,status:200})
 
-  if (!body.accountAuthorizationToken) {
-    return res.json({ message: "Please enter all fields", status: 400 });
-  }
 }
 
 export {
   handlegetBackblazeAuthorization,
   handlegetBackblazeUploadFile,
   handlegetBackblazeCreateServer,
+  handleGetAllBuckets
 };

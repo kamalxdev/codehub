@@ -11,6 +11,7 @@ import useGetData from "./hooks/getData";
 import { useSetRecoilState } from "recoil";
 import { authorizeToken } from "./states/authorizeToken";
 import { user } from "./states/user";
+import { useCookies } from "react-cookie";
 
 function App() {
   useEffect(() => {
@@ -19,7 +20,8 @@ function App() {
       socket.disconnect();
     };
   });
-
+  const [cookies] =useCookies()
+  
   let server_URL=import.meta.env.VITE_SERVER_URL
 
   const setAuthorizeToken=useSetRecoilState(authorizeToken)
@@ -30,15 +32,17 @@ function App() {
     `${server_URL}api/auth/verify`,
     {
       headers: {
-        authtoken: document.cookie
-          .split(";")
-          .find((cookie) => cookie.includes("x-auth-token"))
-          ?.split("=")[1],
+        authorization: cookies["x-auth-token"],
       },
     }
   );
   const b2_authorize = useGetData(
-    `${server_URL}api/backblaze/authorize`
+    `${server_URL}api/backblaze/authorize`,
+    {
+      headers: {
+        authorization: cookies["x-auth-token"],
+      },
+    }
   );
 
   if (b2_authorize.data) {

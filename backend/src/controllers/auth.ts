@@ -60,7 +60,7 @@ async function handleSigninUSER(req: Request, res: Response) {
 // handle verify user and return decoded value of the token
 function handleVerifyUser(req: Request, res: Response) {
   try {
-    const token = req.headers.authtoken as string;
+    const token = req.headers.authorization as string;
     if (!token) {
       return res
         .status(200)

@@ -3,16 +3,22 @@ import { memo, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { authorizeToken } from "../states/authorizeToken";
 import { user } from "../states/user";
+import { useCookies } from "react-cookie";
 
 function CreateBucket() {
   const [bucket, setbucket] = useState({ bucketName: "", server: "node" });
   const accountAuthorizationToken = useRecoilValue(authorizeToken);
   const userData= useRecoilValue(user)
-
+  const [cookies] =useCookies()
   async function handleCreateBucket() {
-    let url = import.meta.env.VITE_SERVER_URL + "api/backblaze/create/bucket";
+    let url = import.meta.env.VITE_SERVER_URL + "api/backblaze/bucket";
     await axios
-      .post(url, { ...bucket, accountAuthorizationToken,user:userData })
+      .post(url,bucket,{
+        headers: {
+          authorization: cookies["x-auth-token"],
+          accountAuthorizationToken
+        },
+      })
       .then((res) => {
         const data = res.data;
         alert(data.message)

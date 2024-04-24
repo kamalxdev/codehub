@@ -1,8 +1,12 @@
 import { memo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 const Signin = () => {
+
+  const [cookies,setCookie] =useCookies()
+
   // To handle the form state
   const [data, setData] = useState({
     email: "",
@@ -24,8 +28,8 @@ const Signin = () => {
           alert(data.message);
         }
         if (data.status === 200) {
+          setCookie("x-auth-token", data.token);
           alert(data.message);
-          document.cookie = `x-auth-token=${data.token}`;
           navigate("/");
         }
       })
