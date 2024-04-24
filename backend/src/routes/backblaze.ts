@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {handleGetAllBuckets, handlegetBackblazeAuthorization,handlegetBackblazeUploadFile,handlegetBackblazeCreateServer } from "../controllers/backblaze";
+import {handleGetFileById,handleGetAllBuckets,handleGetBucket, handlegetBackblazeAuthorization,handlegetBackblazeUploadFile,handlegetBackblazeCreateServer } from "../controllers/backblaze";
 import { PrismaClient } from '@prisma/client'        
 import jwt from "jsonwebtoken";
 
@@ -12,12 +12,24 @@ const SECRET = process.env.JWT_SECRET as string;
 
 type iJWTdata = {name:string,email:string}
 
+
+
+router.get("/authorize",handlegetBackblazeAuthorization)
+
+
 router.use(async (req,res,next)=>{
     const userAuthorizationToken = req.headers.authorization as string;
+    const accountAuthorizationToken = req.headers
+    .accountauthorizationtoken as string;
     if (!userAuthorizationToken) {
         return res.json({ message: "Authorization token missing from header", status: 400 });
     }
-
+    if (!accountAuthorizationToken) {
+        return res.json({
+          message: "Account authorization token missing",
+          status: 400,
+        });
+      }
     // verify the user token
     jwt.verify(userAuthorizationToken, SECRET, async (err, decoded) => {
     if (err) {
@@ -33,7 +45,8 @@ router.use(async (req,res,next)=>{
         if(!data){
             return res.status(200).json({ message: "User not found", status: 400 });
         }
-        res.locals.user=data
+        res.locals.user=data;
+        res.locals.accountAuthorizationToken=accountAuthorizationToken;
         next()
     }).catch((err)=>{
         console.log("Error on finding user", err);
@@ -41,12 +54,11 @@ router.use(async (req,res,next)=>{
     })
   });
 })
-
-
-router.get("/authorize",handlegetBackblazeAuthorization)
 router.get("/upload",handlegetBackblazeUploadFile)
 router.post("/bucket",handlegetBackblazeCreateServer)
 router.get("/bucket",handleGetAllBuckets)
+router.get("/bucket/:id",handleGetBucket)
+router.get("/file/:id",handleGetFileById)
 
 
 

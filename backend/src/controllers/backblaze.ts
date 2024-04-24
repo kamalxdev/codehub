@@ -17,7 +17,6 @@ const backblazeContentBucketID = process.env
 const backblazeDestinationBucketID = process.env
   .BLACKBLAZE_DESTINATION_BUCKETID as string;
 
-
 // to authorize backblaze whic returns the accountAuthorizationToken
 
 async function handlegetBackblazeAuthorization(req: Request, res: Response) {
@@ -101,21 +100,12 @@ async function handlegetBackblazeUploadFile(req: Request, res: Response) {
 async function handlegetBackblazeCreateServer(req: Request, res: Response) {
   const body = req.body;
   const user = res.locals.user;
-  const accountAuthorizationToken= req.headers.accountauthorizationtoken as string
-  console.log("accountAuthorizationToken",accountAuthorizationToken);
-  console.log("user",user);
-  
-  
-  if (
-    !body.server ||
-    !body.bucketName ||
-    !accountAuthorizationToken ||
-    !user
-  ) {
+  const accountAuthorizationToken=res.locals.accountAuthorizationToken;
+
+  if (!body.server || !body.bucketName || !accountAuthorizationToken || !user) {
     return res.json({ message: "Please enter all fields", status: 400 });
   }
 
-  
   // check if bucket already exists
 
   let BUCKET = await prisma.bucket.findUnique({
@@ -183,16 +173,92 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
     });
 }
 
+
+// get all the buckets of a user from DB
 async function handleGetAllBuckets(req: Request, res: Response) {
   const user = res.locals.user;
-  if(!user) return res.json({message:"User not found",status:400})
-    return res.json({message:"User found",user,status:200})
-
+  await prisma.bucket
+    .findMany({
+      where: {
+        createdBy: user?.id,
+      }
+    })
+    .then(async (buckets) => {
+      if (buckets.length == 0) {
+        return res.json({ message: "No buckets found", status: 400 });
+      }
+      return res.json({ data: buckets, status: 200 });
+    })
+    .catch((err) => {
+      console.log("error", err);
+      return res.json({ message: "Error on getting buckets", status: 400 });
+    });
 }
 
+
+async function handleGetBucket(req: Request, res: Response) {
+  const user = res.locals.user;
+  const accountAuthorizationToken=res.locals.accountAuthorizationToken;
+  const bucketName = req.params.id;
+  
+  
+  await prisma.bucket
+    .findUnique({
+      where: {
+        name: bucketName,
+      }
+    })
+    .then(async (bucket) => {
+      // check if bucket exist
+      if (!bucket) {
+        return res.json({ message: `${bucketName} does not exist`, status: 400 });
+      }
+      // check if the bucket is created by the user
+      if(bucket?.createdBy!=user?.id){
+        return res.json({ message: "You are not authorized to view this bucket", status: 400 });
+      }
+      await axios.get(`${apiURL}/b2api/v3/b2_list_file_names?bucketId=${backblazeDestinationBucketID}&prefix=${bucket.name}`,
+      {
+        headers: {
+          Authorization: accountAuthorizationToken,
+        },
+      }
+      ).then((response)=>{
+        let data = response.data;
+        let files = data.files;
+        return res.json({message:"Successfully fetched bucket", data: {bucket,files}, status: 200 });
+      }).catch((err)=>{
+        console.log("error", err);
+        return res.json({ message: "Error on getting bucket files", status: 400 });
+      })
+    })
+    .catch((err) => {
+      console.log("error", err);
+      return res.json({ message: "Error on getting this bucket", status: 400 });
+    });
+}
+
+
+async function handleGetFileById(req: Request, res: Response) {
+  const accountAuthorizationToken=res.locals.accountAuthorizationToken;
+  const fileId = req.params.id;
+  await axios.get(`${apiURL}/b2api/v3/b2_download_file_by_id?fileId=${fileId}`,{
+    headers: {
+      Authorization: accountAuthorizationToken,
+    },
+  }).then((response)=>{
+    let data = response.data;
+    return res.send( data);
+  }).catch((err)=>{
+    console.log("error", err);
+    return res.json({ message: "Error on getting file", status: 400 });
+  })
+}
 export {
   handlegetBackblazeAuthorization,
   handlegetBackblazeUploadFile,
   handlegetBackblazeCreateServer,
-  handleGetAllBuckets
+  handleGetAllBuckets,
+  handleGetBucket,
+  handleGetFileById
 };

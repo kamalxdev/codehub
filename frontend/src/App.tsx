@@ -12,6 +12,7 @@ import { useSetRecoilState } from "recoil";
 import { authorizeToken } from "./states/authorizeToken";
 import { user } from "./states/user";
 import { useCookies } from "react-cookie";
+import Bucket from "./pages/bucket";
 
 function App() {
   useEffect(() => {
@@ -60,6 +61,7 @@ function App() {
         <Route path="/auth/signin" element={<Signin />} />
         <Route path="/auth/signup" element={<Signup/>} />
         <Route path="/create/bucket" element={<CreateBucket/>} />
+        <Route path="/bucket/:id" element={<Bucket/>} />
       </Routes>
     </BrowserRouter>
   );
