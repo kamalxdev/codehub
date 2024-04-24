@@ -5,6 +5,7 @@ import { Request, Response } from "express";
 import crypto from "crypto";
 
 import { PrismaClient } from "@prisma/client";
+import { ifileinfo } from "../types/fileInfo";
 
 const prisma = new PrismaClient();
 
@@ -47,7 +48,6 @@ async function handlegetBackblazeUploadFile(req: Request, res: Response) {
   if (!body.fileName || !body.fileData || !body.accountAuthorizationToken) {
     return res.json({ message: "Please enter all fields", status: 400 });
   }
-
   // creating sha1 hash of the file data
   let hash = crypto.createHash("sha1");
 
@@ -96,27 +96,32 @@ async function handlegetBackblazeUploadFile(req: Request, res: Response) {
     });
 }
 
-
-
 // to create a folder in blacblaze which here we say bucket and copy base files of the server
 async function handlegetBackblazeCreateServer(req: Request, res: Response) {
   const body = req.body;
 
-  if (!body.server || !body.bucketName || !body.accountAuthorizationToken || !body.user) {
+  if (
+    !body.server ||
+    !body.bucketName ||
+    !body.accountAuthorizationToken ||
+    !body.user
+  ) {
     return res.json({ message: "Please enter all fields", status: 400 });
   }
 
   // check if user exists
-  
+
   let USER = await prisma.user.findUnique({
     where: {
       email: body?.user?.email,
     },
   });
 
-  if(!USER) return res.json({ message: "User not found. Please login to create a bucket", status: 400 });
-
-
+  if (!USER)
+    return res.json({
+      message: "User not found. Please login to create a bucket",
+      status: 400,
+    });
 
   // check if bucket already exists
 
@@ -126,26 +131,33 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
     },
   });
 
-  if(BUCKET) return res.json({ message: "Bucket already exists", status: 400 });
-
+  if (BUCKET)
+    return res.json({ message: "Bucket already exists", status: 400 });
 
   // create the folder with the name of bucket name
-  await prisma.serverContent
-    .findMany({
-      where: {
-        name: body?.server,
-      },
-    })
-    .then(async (data) => {
+  await axios
+    .get(
+      `${apiURL}/b2api/v3/b2_list_file_names?bucketId=${backblazeContentBucketID}&prefix=${body.server}`,
+      {
+        headers: {
+          Authorization: body?.accountAuthorizationToken,
+        },
+      }
+    )
+    .then(async (response) => {
+      let data = response.data;
+      let files = data.files;
 
       // copying base file from content bucket to user_content bucket
       try {
-        data.map(async (serverContent) => {
+        files.map(async (file: ifileinfo) => {
+          let fileName = file?.fileName?.split("/")[1];
+          if (fileName == ".bzEmpty") return;
           await axios.post(
             `${apiURL}/b2api/v3/b2_copy_file`,
             {
-              sourceFileId: serverContent?.fileid,
-              fileName: body.bucketName+"/"+serverContent?.fileName,
+              sourceFileId: file?.fileId,
+              fileName: body?.bucketName + "/" + fileName,
               destinationBucketId: backblazeDestinationBucketID,
             },
             {
@@ -153,7 +165,7 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
                 Authorization: body?.accountAuthorizationToken,
               },
             }
-          )
+          );
         });
       } catch (error) {
         return res.json({ message: "Error on copying file", status: 400 });
@@ -163,16 +175,31 @@ async function handlegetBackblazeCreateServer(req: Request, res: Response) {
         data: {
           name: body.bucketName,
           server: body.server,
-          createdBy: USER?.id
+          createdBy: USER?.id,
         },
       });
 
-      return res.json({data, message: "Server content created", status: 200});
+      return res.json({ data, message: "Server content created", status: 200 });
     })
     .catch((err) => {
       console.log("error", err);
-      return res.json({ message: "Error on getting server base files", status: 400 });
+      return res.json({
+        message: "Error on getting server base files",
+        status: 400,
+      });
     });
 }
 
-export { handlegetBackblazeAuthorization, handlegetBackblazeUploadFile,handlegetBackblazeCreateServer };
+async function handleGetAllBuckets(req: Request, res: Response) {
+  const body = req.body;
+
+  if (!body.accountAuthorizationToken) {
+    return res.json({ message: "Please enter all fields", status: 400 });
+  }
+}
+
+export {
+  handlegetBackblazeAuthorization,
+  handlegetBackblazeUploadFile,
+  handlegetBackblazeCreateServer,
+};

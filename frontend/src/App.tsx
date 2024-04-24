@@ -54,8 +54,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth/signin" element={<Signin />} />
-        <Route path="/create/bucket" element={<CreateBucket/>} />
         <Route path="/auth/signup" element={<Signup/>} />
+        <Route path="/create/bucket" element={<CreateBucket/>} />
       </Routes>
     </BrowserRouter>
   );
